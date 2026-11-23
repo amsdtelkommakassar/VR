@@ -671,7 +671,7 @@ function mkTool(par,fp){const g=new THREE.Group();par.add(g);const A=(n,rx,fn,nf
  A("swt",Math.PI/2,q=>{mesh(new THREE.BoxGeometry(.03,.3,.03),0x8a5a2b,0,-.15,0,q);mesh(new THREE.BoxGeometry(.16,.16,.02),0x66bb6a,0,-.38,0,q)});
  if(fp){g.position.set(0,0,-.5);g.scale.setScalar(.9);g.traverse(o=>{o.castShadow=false})}else g.position.set(0,-.66,0);return g}
 const TLS=[mkTool(AV.aR,0),mkTool(FPA.R,1)],CANS=TLS.map(g=>g.getObjectByName("can"));FPA.R.rotation.order=FPA.L.rotation.order="YXZ";
-function updAv(dt,t){const vr=R.xr.isPresenting,tp=(st.tp||CS.on)&&!vr&&!MENU.on,m=AVS.mv,air=JY>.03;AV.visible=!vr&&!MENU.on;FPA.visible=!vr&&!tp&&!MENU.on;AV.aL.visible=AV.aR.visible=tp;if(vr)return;
+function updAv(dt,t){const vr=R.xr.isPresenting,tp=(st.tp||(CS.on&&!CS.vr))&&!vr&&!MENU.on,m=AVS.mv,air=JY>.03;AV.visible=!vr&&!MENU.on;FPA.visible=!vr&&!tp&&!MENU.on;AV.aL.visible=AV.aR.visible=tp;if(vr)return;
  const yw=CS.on?CS.pyaw:yaw,bx=CS.on?CS.px:rig.position.x,bz=CS.on?CS.pz:rig.position.z;AV.position.set(bx+(tp?0:Math.sin(yw)*.3),JY,bz+(tp?0:Math.cos(yw)*.3));AV.rotation.y=yw+Math.PI;AV.head.visible=tp;AV.head.rotation.x=CS.on?0:Math.max(-.8,Math.min(.8,-pitch*.7));
  AVS.ph+=dt*(m==2?13:m==1?8:0);const sw=m?Math.sin(AVS.ph)*(m==2?1.15:.7):0;
  let aR=-sw,aL=sw,zR=0,zL=0,lL=sw,lR=-sw,lean=m==2?.28:m==1?.05:0,by=m?Math.abs(Math.sin(AVS.ph))*.05:Math.sin(t*2)*.01,fR=-.3-sw*.1,fL=-.3+sw*.1,yR=0,yL=0,tn="",tl=0;
@@ -784,17 +784,17 @@ function dzMenu(){const N=NPC_DATA,M=MISI,bk=[{t:"◀ Kembali",fn:()=>dzMenu()},
  ["Rani",0xff8fab,0xff5c8a,0xf1c27d,()=>dlgQ("Rani","Kalau sudah punya biji, tanam di kebunmu dekat kincir angin, ya. Seru, lho! 🌱",OK),"","berbicara dengan Rani"]
 ].forEach((d,i)=>{sqNpc(WPOS[i][0],WPOS[i][1],d[0],d[1],d[2],d[3],d[4],()=>d[5],d[6]);WN.push({e:SQN[SQN.length-1],c:col[col.length-1]})});
 function stage(plaza){WN.forEach((w,i)=>{const q=(plaza?WPOS:HPOS)[i];w.e.g.position.set(q[0],0,q[1]);w.e.x=w.c.x=q[0];w.e.z=w.c.z=q[1]})}
-function startGame(){if(VRSTART||R.xr.isPresenting){VRSTART=false;stage(false);welcome()}else intro()}
+function startGame(){if(VRSTART||R.xr.isPresenting){VRSTART=false;intro(true)}else intro()}
 function csStep(dt){const k=1-Math.exp(-dt*2.4);if(CS.follow)CS.tl.set(CS.px,1.3,CS.pz);CS.cp.lerp(CS.tp,k);CS.cl.lerp(CS.tl,k);
  if(CS.walk){CS.pz-=2.1*dt;if(CS.pz<=10.6){CS.pz=10.6;CS.walk=false}}
  const dx=CS.cl.x-CS.cp.x,dz=CS.cl.z-CS.cp.z,h=Math.hypot(dx,dz)||1e-3;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(CS.cl.y-CS.cp.y,h);rig.position.set(CS.cp.x,0,CS.cp.z);CS.cy=CS.cp.y;
  if(CS.typ<CS.full.length){CS.typ=Math.min(CS.full.length,CS.typ+dt*48);$("ctxt").textContent=CS.full.slice(0,CS.typ|0)}}
 function csGo(i){if(i>=CS.steps.length)return csEnd();CS.i=i;const q=CS.steps[i];CS.tp.set(q.p[0],q.p[1],q.p[2]);if(q.l=="p")CS.follow=true;else{CS.follow=false;CS.tl.set(q.l[0],q.l[1],q.l[2])}
  const w=$("cwho");w.style.display=q.who?"inline-block":"none";w.textContent=q.who||"";w.style.background=q.c||"#2f80ed";$("cbox").className=q.who?"":"nar";CS.full=q.t;CS.typ=0;$("ctxt").textContent="";beep(q.who?640:420)}
-function csNext(){if(!CS.on||CS.busy)return;if(CS.typ<CS.full.length){CS.typ=CS.full.length;$("ctxt").textContent=CS.full;return}csGo(CS.i+1)}
-function csSkip(){if(CS.on&&!CS.busy)csEnd()}
+function csNext(){if(!CS.on||CS.busy)return;if(CS.vr)return vrNext();if(CS.typ<CS.full.length){CS.typ=CS.full.length;$("ctxt").textContent=CS.full;return}csGo(CS.i+1)}
+function csSkip(){if(CS.on&&!CS.busy){if(CS.vr)vrEnd();else csEnd()}}
 function csEnd(){CS.busy=true;$("cfade").style.transition="opacity .7s";$("cfade").style.opacity=1;setTimeout(()=>{CS.walk=false;AVS.at=0;stage(false);rig.position.set(CS.sv.x,0,CS.sv.z);yaw=CS.sv.yaw;pitch=CS.sv.pitch;CS.on=false;$("cs").style.display="none";$("hud").style.display="block";$("cfade").style.opacity=0;CS.busy=false;toast("📜 Tugas pertama: temui "+NPC_DATA[0].nama+" di dekat ladang!")},750)}
-function intro(){if(R.xr.isPresenting||CS.on){stage(false);return welcome()}
+function intro(vr){vr=vr||R.xr.isPresenting;if(CS.on){stage(false);return welcome()}
  const N=NPC_DATA,M=MISI,n=st.nama,K=[-2,1.6,5.6],Nn=[-.7,1.6,4.8],Dz=[.7,1.6,4.8],Ra=[2,1.4,5.6],cK="#8d6e63",cN="#b0408a",cD="#2563eb",cR="#ff5c8a";
  const S=(who,c,t,p,l)=>({who,c,t,p,l}),sh=(o,dx,dz)=>[o.x+dx,2.4,o.z+dz],at=o=>[o.x,1.5,o.z];
  CS.sv={x:rig.position.x,z:rig.position.z,yaw,pitch};stage(true);CS.px=0;CS.pz=14.4;CS.pyaw=0;CS.walk=true;CS.cp.set(4.5,2.6,17.5);CS.cl.set(0,1.3,13);CS.tp.copy(CS.cp);CS.tl.copy(CS.cl);
@@ -815,6 +815,7 @@ function intro(){if(R.xr.isPresenting||CS.on){stage(false);return welcome()}
   S("Dzaki",cD,TOUCH?"Geser layar kiri untuk berjalan, geser kanan untuk melihat, ketuk E untuk berinteraksi dan ⤒ untuk melompat. Peta kecil menandai semua lokasi.":"Jalan: WASD. Sprint: tekan W dua kali. Lompat: Space. Interaksi: E. Ganti kamera: V. Peta kecil di kanan bawah menandai semua lokasi.",[0,2.3,14.8],[0,1.6,6]),
   S("Dzaki",cD,"Tugas utamamu: temui "+N.map(o=>o.nama).join(", ")+" secara berurutan. Belajar, jawab kuis, dan praktik menanam. Kumpulkan bintang sebanyak-banyaknya!",[1.8,1.7,8.2],Dz),
   S("Kakek",cK,"Semangat ya, cucuku! Kakek bangga padamu. Selamat bertualang!",[-2.8,1.7,8.4],K)];
+ if(vr)return vrIntroStart();
  CS.on=true;CS.busy=false;$("hud").style.display="none";$("cs").style.display="block";const f=$("cfade");f.style.transition="none";f.style.opacity=1;requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.transition="opacity 1s";f.style.opacity=0}));
  const t=$("ctitle");t.classList.remove("go");void t.offsetWidth;t.classList.add("go");csGo(0)}
 $("cs").onclick=()=>csNext();$("cskip").onclick=e=>{e.stopPropagation();csSkip()};
@@ -889,19 +890,30 @@ function ppos(v){if(R.xr.isPresenting)camera.getWorldPosition(v);else v.set(CS.o
 const ctr=[],ray=new THREE.Raycaster(),tm=new THREE.Matrix4();ray.camera=camera;
 const marker=mesh(new THREE.RingGeometry(.2,.32,24),0xffd23f,0,.06,0);marker.rotation.x=-Math.PI/2;marker.visible=false;marker.castShadow=false;
 for(let i=0;i<2;i++){const c=R.xr.getController(i);c.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3(0,0,-5)]),new THREE.LineBasicMaterial({color:0xffffff})));
- c.addEventListener("selectend",()=>padEnd(c));c.addEventListener("squeezestart",()=>{if(st.on&&!ui.cur)pauseMenu()});rig.add(c);ctr.push(c)}
+ c.addEventListener("selectend",()=>padEnd(c));c.addEventListener("squeezestart",()=>{if(st.on&&!ui.cur&&!CS.on)pauseMenu()});rig.add(c);ctr.push(c)}
 function setRay(c){tm.identity().extractRotation(c.matrixWorld);ray.ray.origin.setFromMatrixPosition(c.matrixWorld);ray.ray.direction.set(0,0,-1).applyMatrix4(tm)}
 function floorPt(c){setRay(c);const o=ray.ray.origin,d=ray.ray.direction;if(d.y>-.05)return null;const t=-o.y/d.y;if(t>14)return null;
  const x=o.x+d.x*t,z=o.z+d.z*t;if(Math.abs(x)>BX||z<Z0||z>Z1||col.some(k=>Math.hypot(x-k.x,z-k.z)<(k.tc||k.r+.4)))return null;return{x,z}}
-function padEnd(c){if(!st.on)return;setRay(c);
+function padEnd(c){if(!st.on)return;setRay(c);if(CS.on&&CS.vr){if(!cpanel.visible)return;const h=ray.intersectObject(cpanel)[0];if(h){const x=h.uv.x*CW,y=(1-h.uv.y)*CH,b=CS.hits.find(b=>x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h);if(b)b.fn()}return}
  if(ui.cur){if(!panel.visible)return;const h=ray.intersectObject(panel)[0];if(h){const x=h.uv.x*PW,y=(1-h.uv.y)*PH,b=ui.hits.find(b=>x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h);if(b)b.fn()}return}
  camera.getWorldPosition(v1);
  for(const o of INT){const p=o.g.position;if(Math.hypot(v1.x-p.x,v1.z-p.z)>o.r+2||o.lab()==null)continue;const h=ray.intersectObject(o.g,true)[0];if(h&&h.distance<8){o.act();return}}
  const p=floorPt(c);if(p){camera.getWorldPosition(v1);rig.position.x+=p.x-v1.x;rig.position.z+=p.z-v1.z}}
 let snapCd=0;
 function turn(a){camera.getWorldPosition(v1);const px=v1.x,pz=v1.z;rig.rotation.y+=a;camera.getWorldPosition(v1);rig.position.x+=px-v1.x;rig.position.z+=pz-v1.z}
-function vrTurn(dt){const s=R.xr.getSession();if(!s)return;snapCd-=dt;for(const src of s.inputSources){const a=src.gamepad&&src.gamepad.axes;if(!a||a.length<4)continue;const x=a[2];
+function vrTurn(dt){const s=R.xr.getSession();if(!s)return;snapCd-=dt;for(const src of s.inputSources){if(src.handedness==="left")continue;const a=src.gamepad&&src.gamepad.axes;if(!a||a.length<4)continue;const x=a[2];
  if(st.snap){if(Math.abs(x)>.7&&snapCd<=0){turn(-Math.sign(x)*Math.PI/6);snapCd=.35}}else if(Math.abs(x)>.2)turn(-x*dt*1.8)}}
+/* v16: berjalan & berlari di VR — thumbstick kiri (maju/mundur/geser menurut arah pandang), dorong penuh atau tekan stick untuk berlari */
+const VG=(()=>{const c=document.createElement("canvas");c.width=c.height=128;const g=c.getContext("2d"),r=g.createRadialGradient(64,64,34,64,64,64);r.addColorStop(0,"rgba(0,0,0,0)");r.addColorStop(1,"rgba(0,0,0,1)");g.fillStyle=r;g.fillRect(0,0,128,128);
+ const m=new THREE.Mesh(new THREE.PlaneGeometry(.9,.9),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,opacity:0,depthTest:false,depthWrite:false}));m.position.z=-.3;m.renderOrder=997;m.visible=false;camera.add(m);return m})();
+let vrSp=0;
+function vrMove(dt){const s=R.xr.getSession();let f=0,sd=0,run=false,any=false;
+ if(s){const L=[...s.inputSources].filter(x=>x.gamepad&&x.gamepad.axes&&x.gamepad.axes.length>=4),hasL=L.some(x=>x.handedness==="left");
+  for(const src of L){const a=src.gamepad.axes,B=src.gamepad.buttons;if(src.handedness==="left"){sd=a[2];f=-a[3];run=!!(B&&B[3]&&B[3].pressed)}else if(!hasL&&src.handedness!=="left"){f=-a[3]}}}
+ const m=Math.hypot(f,sd);
+ if(m>.18){any=true;if(m>.92)run=true;const spd=run?7.5:4*Math.min(1,m/.9),d=new THREE.Vector3();camera.getWorldDirection(d);d.y=0;if(d.lengthSq()<.04)d.set(-Math.sin(rig.rotation.y),0,-Math.cos(rig.rotation.y));d.normalize();
+  const k=spd*dt/m,dx=(d.x*f+(-d.z)*sd)*k,dz=(d.z*f+d.x*sd)*k,h=new THREE.Vector3();camera.getWorldPosition(h);const hx=h.x,hz=h.z;h.x+=dx;h.z+=dz;h.y=0;resolve(h);rig.position.x+=h.x-hx;rig.position.z+=h.z-hz;AVS.mv=run?2:1}
+ vrSp+=((any?(run?1:.6):0)-vrSp)*Math.min(1,dt*6);VG.material.opacity=vrSp*.55;VG.visible=vrSp>.02}
 
 /* ================= UI (overlay desktop + panel world-space VR) ================= */
 const PW=1024,PH=640,pcv=document.createElement("canvas");pcv.width=PW;pcv.height=PH;const pg=pcv.getContext("2d"),ptex=new THREE.CanvasTexture(pcv);
@@ -940,6 +952,47 @@ function musStart(){const c=AC();if(!c||mus.run)return;mus.run=true;mus.next=c.c
 function musSet(on){st.mus=on;if(AC.c)AC.m.gain.setTargetAtTime(on?.5:0,AC.c.currentTime,.1);$("bMus").textContent=on?"🎵":"🔇"}
 document.addEventListener("visibilitychange",()=>{const c=AC.c;if(!c)return;if(document.hidden)c.suspend();else c.resume()});
 ["pointerdown","keydown"].forEach(ev=>addEventListener(ev,()=>musStart(),{once:true}));
+
+/* ================= v15: INTRO / CERITA UNTUK MODE VR ================= */
+const VF=new THREE.Mesh(new THREE.PlaneGeometry(3,3),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0,depthTest:false,depthWrite:false}));VF.position.z=-.25;VF.renderOrder=999;VF.visible=false;VF.a=0;VF.t=0;VF.cb=null;camera.add(VF);
+const CW=1024,CH=380,ccv=document.createElement("canvas");ccv.width=CW;ccv.height=CH;const cg=ccv.getContext("2d"),ctex=new THREE.CanvasTexture(ccv);CS.hits=[];CS.vr=false;CS.spk=-1;CS.sp=null;
+const cpanel=new THREE.Mesh(new THREE.PlaneGeometry(1.5,1.5*CH/CW),new THREE.MeshBasicMaterial({map:ctex,transparent:true,depthTest:false}));cpanel.renderOrder=998;cpanel.visible=false;scene.add(cpanel);
+const SPK=new THREE.Mesh(new THREE.ConeGeometry(.13,.26,4),new THREE.MeshBasicMaterial({color:0xffd23f}));SPK.rotation.x=Math.PI;SPK.visible=false;scene.add(SPK);
+function VFto(t,cb){VF.t=t;VF.cb=cb||null;VF.visible=true}
+ACT.push((dt,t)=>{if(VF.a!==VF.t){const d=VF.t-VF.a;VF.a+=Math.sign(d)*Math.min(dt*3.2,Math.abs(d));VF.material.opacity=VF.a;if(VF.a===VF.t){VF.visible=VF.a>0;const c=VF.cb;VF.cb=null;if(c)c()}}
+ const w=CS.on&&CS.vr&&CS.spk>=0&&WN[CS.spk];SPK.visible=!!w;if(w){const g=w.e.g.position;SPK.position.set(g.x,2.75+Math.sin(t*5)*.07,g.z);SPK.rotation.y=t*2}});
+function cRR(x,y,w,h,r,f,s){cg.beginPath();cg.moveTo(x+r,y);cg.arcTo(x+w,y,x+w,y+h,r);cg.arcTo(x+w,y+h,x,y+h,r);cg.arcTo(x,y+h,x,y,r);cg.arcTo(x,y,x+w,y,r);cg.closePath();cg.fillStyle=f;cg.fill();if(s){cg.lineWidth=6;cg.strokeStyle=s;cg.stroke()}}
+function cWrap(t,x,y,w,lh){let line="";for(const wd of t.split(" ")){const s=line+wd+" ";if(cg.measureText(s).width>w&&line){cg.fillText(line,x,y);y+=lh;line=wd+" "}else line=s}cg.fillText(line,x,y)}
+function paintC(q,i){cg.clearRect(0,0,CW,CH);cRR(3,3,CW-6,CH-6,34,"#fffbea","#7bc92a");cg.textAlign="left";
+ if(q.who){cg.font="bold 30px sans-serif";const w=cg.measureText(q.who).width+44;cRR(30,24,w,50,25,q.c||"#2f80ed");cg.fillStyle="#fff";cg.fillText(q.who,52,59)}
+ else{cg.fillStyle="#2e7d32";cg.font="bold 34px sans-serif";cg.fillText(i==0?"🌱 Petualangan Tumbuhan":"📖 Kisah",36,60)}
+ cg.fillStyle="#8a8a8a";cg.font="22px sans-serif";cg.textAlign="right";cg.fillText((i+1)+" / "+CS.steps.length,CW-36,52);cg.textAlign="left";
+ cg.fillStyle="#2b3a1f";cg.font="29px sans-serif";cWrap(q.t,36,122,CW-72,40);
+ CS.hits=[];const by=CH-84,bh=60;
+ cRR(36,by,260,bh,20,"#b0bec5");cg.fillStyle="#37474f";cg.font="bold 26px sans-serif";cg.textAlign="center";cg.fillText("Lewati ⏭",166,by+40);CS.hits.push({x:36,y:by,w:260,h:bh,fn:()=>vrEnd()});
+ const last=i>=CS.steps.length-1;cRR(CW-36-440,by,440,bh,20,"#4caf50");cg.fillStyle="#fff";cg.fillText(last?"Mulai bertualang ▶":"Lanjut ▶",CW-36-220,by+40);CS.hits.push({x:CW-36-440,y:by,w:440,h:bh,fn:()=>vrNext()});ctex.needsUpdate=true}
+function vrSpot(q){const p=q.p;if(CS.i==0||q.l==="p"||q.plz||(q.who&&p[2]>7.5&&p[2]<9&&Math.abs(p[0])<3.5))return{x:0,z:8.6,l:[0,1.4,5.2],plz:1};const c=vrClear(p[0],p[2],q.l);return{x:c[0],z:c[1],l:q.l}}
+function vrClear(x,z,l){const ok=(a,b)=>Math.abs(a)<=BX&&b>=Z0&&b<=Z1&&Math.hypot(a-l[0],b-l[2])>3.5&&!col.some(k=>Math.hypot(a-k.x,b-k.z)<(k.tc||k.r+.4)+.9);
+ for(const r of[0,1.5,3,4.5,6,8,10])for(let a=0;a<12;a++){const g=a*Math.PI/6,cx=x+Math.cos(g)*r,cz=z+Math.sin(g)*r;if(ok(cx,cz))return[cx,cz]}return[x,z]}
+function vrPose(x,z,l){camera.updateMatrixWorld(true);const f=new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion),hy=Math.atan2(-f.x,-f.z),Y=Math.atan2(-(l[0]-x),-(l[2]-z)),yw=Y-hy;
+ rig.rotation.y=yaw=yw;pitch=-.05;const c=camera.position,ox=c.x*Math.cos(yw)+c.z*Math.sin(yw),oz=-c.x*Math.sin(yw)+c.z*Math.cos(yw);rig.position.set(x-ox,0,z-oz);rig.updateMatrixWorld(true)}
+function vrPanel(){camera.updateMatrixWorld(true);const p=new THREE.Vector3(),d=new THREE.Vector3();camera.getWorldPosition(p);camera.getWorldDirection(d);d.y=0;if(d.lengthSq()<1e-4)d.set(0,0,-1);d.normalize();
+ cpanel.position.set(p.x+d.x*1.35,p.y-.42,p.z+d.z*1.35);cpanel.lookAt(p.x,p.y-.42,p.z);cpanel.visible=true}
+function vrNpc(i,x,z){const w=WN[i];w.e.g.position.set(x,0,z);w.e.x=w.c.x=x;w.e.z=w.c.z=z}
+function vrGo(i,first){if(i>=CS.steps.length)return vrEnd();CS.i=i;const q=CS.steps[i],sp=vrSpot(q),moved=first||!CS.sp||Math.hypot(sp.x-CS.sp.x,sp.z-CS.sp.z)>.8;
+ const apply=()=>{CS.sp=sp;CS.px=sp.x;CS.pz=sp.z;vrPose(sp.x,sp.z,sp.l);
+  CS.spk=q.who?({Kakek:0,Nenek:1,Dzaki:2,Rani:3})[q.who]:-1;if(CS.spk==null)CS.spk=-1;
+  if(sp.plz)vrNpc(2,WPOS[2][0],WPOS[2][1]);else{const dx=sp.l[0]-sp.x,dz=sp.l[2]-sp.z,h=Math.hypot(dx,dz)||1,fx=dx/h,fz=dz/h;vrNpc(2,sp.x-fz*1.6+fx*.3,sp.z+fx*1.6+fz*.3)}
+  paintC(q,i);vrPanel();beep(q.who?640:420)};
+ if(moved){cpanel.visible=false;if(first){apply();VF.a=1;VF.material.opacity=1;VFto(0)}else VFto(1,()=>{apply();VFto(0)})}else apply()}
+function vrNext(){if(!CS.on||!CS.vr||CS.busy)return;vrGo(CS.i+1)}
+function vrEnd(){if(!CS.on||!CS.vr||CS.busy)return;CS.busy=true;cpanel.visible=false;SPK.visible=false;
+ VFto(1,()=>{stage(false);rig.position.set(CS.sv.x,0,CS.sv.z);rig.rotation.y=yaw=CS.sv.yaw;pitch=CS.sv.pitch;CS.on=false;CS.vr=false;CS.spk=-1;CS.sp=null;CS.busy=false;VFto(0);welcome()})}
+function vrIntroStart(){if(!R.xr.isPresenting){camera.position.set(0,1.6,0);camera.rotation.set(-.05,0,0)}CS.vr=true;CS.on=true;CS.busy=false;CS.walk=false;CS.cy=1.6;CS.px=0;CS.pz=8.6;CS.pyaw=0;CS.sp=null;$("hud").style.display="none";$("cs").style.display="none";
+ CS.steps.forEach(q=>{q.t=q.t.replace("Ikuti kameranya, ya.","Kita akan berkeliling sebentar, ya.");
+  if(q.t.indexOf("Peta kecil")>=0){q.t="Pindah: arahkan kontroler ke lantai lalu tekan trigger. Interaksi: arahkan ke warga, petak, atau sumur lalu tekan trigger. Jalan: thumbstick kiri (dorong penuh atau tekan stick untuk lari). Putar badan: thumbstick kanan. Menu: tombol grip.";q.plz=1}});
+ vrGo(0,true)}
+R.xr.addEventListener("sessionstart",()=>{if(CS.on&&CS.vr)setTimeout(()=>{if(CS.on&&CS.vr&&CS.sp){vrPose(CS.sp.x,CS.sp.z,CS.sp.l);vrPanel()}},500)});
 
 /* ================= MISI, KUIS & PRAKTIK ================= */
 function prog(m){const L=PLOTS.filter(p=>p.m==m);if(m==0)return{d:L.filter(p=>p.hv).length,n:L.length};return{d:L.filter(p=>p.stage>=p.max).length+(m==2&&st.cang>=4?1:0),n:L.length+(m==2?1:0)}}
@@ -986,14 +1039,14 @@ function reset(){st.m=0;st.phase=0;st.bin=[0,0,0];st.salah=0;st.salahP=0;st.wate
 function restart(){reset();startGame()}
 function toMenu(){st.on=false;st.paused=true;tv.f=tv.s=0;ptr.clear();joy.style.display="none";try{if(document.pointerLockElement)document.exitPointerLock()}catch(e){}const s=R.xr.getSession();if(s)s.end();ui.cur=null;db.innerHTML="";dlg.style.display="none";panel.visible=false;$("hud").style.display="none";MENU.on=true;$("cont").style.display="flex";$("start").style.display="flex"}
 function welcome(){ui.show({title:"Selamat datang!",text:"Halo, "+st.nama+"! Jelajahi desa yang hidup ini dan temui tiga warga untuk belajar perkembangbiakan tumbuhan, lalu praktikkan dengan menanam dan menyiram. Mulailah dari "+NPC_DATA[0].nama+" di dekat ladang.",
- btns:[{t:"Lanjut ▶",fn:()=>ui.show({title:"Cara bermain",text:"Komputer: WASD/panah jalan, tekan W dua kali (atau Shift) untuk sprint, Space melompat, V ganti kamera 1/3 orang, klik layar lalu gerakkan mouse (atau tahan & seret) untuk melihat, E berinteraksi, Esc atau tombol ☰ untuk menu, 🎵 untuk musik.\nHP/tablet: geser layar kiri untuk berjalan, geser layar kanan untuk melihat, ketuk tombol E untuk berinteraksi.\nVR: arahkan kontroler ke lantai lalu tekan trigger untuk berpindah; arahkan ke warga, petak, atau sumur lalu trigger untuk berinteraksi; thumbstick untuk berputar; tombol grip untuk menu.",btns:[{t:"Lanjut ▶",fn:()=>ui.show({title:"Tantangan",text:"💧 Isi kaleng air di sumur (muat 4 siram).\n🌰 Kumpulkan 6 biji emas yang bersinar di seluruh desa.\n🐛 Usir hama ulat sebelum memakan tanamanmu (3 hama = medali).\n⏱ Selesaikan praktik Misi 3 dalam 2:30.\n🐶 Ajak Bruno si anjing berkeliling dan sapa para warga!\n🎬 Temui Kak Vidi di dekat jalan masuk desa untuk menonton video pembelajaran!\n🪙 Bantu Nenek Ratih & Pak Kayu, lompati 3 rintangan (Space), dan pecahkan teka-teki untuk koin & perlengkapan!\n🛒 Beli biji di Toko Bu Tini (sisi timur desa), lalu tanam di Kebunku dekat kincir angin untuk panen koin!",btns:[{t:"Mulai Petualangan!",fn:ui.hide}]})}]})}]})}
+ btns:[{t:"Lanjut ▶",fn:()=>ui.show({title:"Cara bermain",text:"Komputer: WASD/panah jalan, tekan W dua kali (atau Shift) untuk sprint, Space melompat, V ganti kamera 1/3 orang, klik layar lalu gerakkan mouse (atau tahan & seret) untuk melihat, E berinteraksi, Esc atau tombol ☰ untuk menu, 🎵 untuk musik.\nHP/tablet: geser layar kiri untuk berjalan, geser layar kanan untuk melihat, ketuk tombol E untuk berinteraksi.\nVR: arahkan kontroler ke lantai lalu tekan trigger untuk berpindah; arahkan ke warga, petak, atau sumur lalu trigger untuk berinteraksi; thumbstick kiri untuk berjalan (dorong penuh atau tekan stick untuk berlari); thumbstick kanan untuk berputar; tombol grip untuk menu.",btns:[{t:"Lanjut ▶",fn:()=>ui.show({title:"Tantangan",text:"💧 Isi kaleng air di sumur (muat 4 siram).\n🌰 Kumpulkan 6 biji emas yang bersinar di seluruh desa.\n🐛 Usir hama ulat sebelum memakan tanamanmu (3 hama = medali).\n⏱ Selesaikan praktik Misi 3 dalam 2:30.\n🐶 Ajak Bruno si anjing berkeliling dan sapa para warga!\n🎬 Temui Kak Vidi di dekat jalan masuk desa untuk menonton video pembelajaran!\n🪙 Bantu Nenek Ratih & Pak Kayu, lompati 3 rintangan (Space), dan pecahkan teka-teki untuk koin & perlengkapan!\n🛒 Beli biji di Toko Bu Tini (sisi timur desa), lalu tanam di Kebunku dekat kincir angin untuk panen koin!",btns:[{t:"Mulai Petualangan!",fn:ui.hide}]})}]})}]})}
 function valid(){const n=$("nama").value.trim();if(!n){$("err").textContent="Masukkan nama pemain dulu ya.";$("nama").focus();return false}$("err").textContent="";st.nama=n;st.kelas="";return true}
 function begin(){menuLeave(1);$("start").style.display="none";$("hud").style.display="block";$("cont").style.display="none";st.paused=false;st.on=true;musStart();reset();startGame()}
 $("go").onclick=()=>{if(valid())begin()};
 $("cont").onclick=()=>{menuLeave(1);musStart();$("start").style.display="none";$("hud").style.display="block";st.paused=false;st.on=true;ui.hide()};
 const mm1=$("mm1"),mm2=$("mm2");
 function mpanel(h,init){mm1.style.display="none";mm2.style.display="flex";mm2.innerHTML=h+'<button class="mb" id="mback">← Kembali</button>';$("mback").onclick=()=>{mm2.style.display="none";mm1.style.display="flex"};if(init)init()}
-$("howb").onclick=()=>mpanel('<h3>🎮 Cara Bermain</h3><div class="kg"><b>W A S D / Panah</b><span>Berjalan</span><b>W dua kali / Shift</b><span>Sprint</span><b>Space</b><span>Melompat</span><b>E</b><span>Berinteraksi</span><b>V</b><span>Ganti kamera 1/3 orang</span><b>Mouse</b><span>Melihat sekeliling</span><b>Esc / ☰</b><span>Menu jeda</span></div><p>📱 HP/tablet: geser kiri untuk berjalan, geser kanan untuk melihat, ketuk E untuk berinteraksi, ⤒ untuk melompat.</p><p>🥽 VR: arahkan kontroler lalu tekan pemicu untuk teleportasi atau berinteraksi.</p>');
+$("howb").onclick=()=>mpanel('<h3>🎮 Cara Bermain</h3><div class="kg"><b>W A S D / Panah</b><span>Berjalan</span><b>W dua kali / Shift</b><span>Sprint</span><b>Space</b><span>Melompat</span><b>E</b><span>Berinteraksi</span><b>V</b><span>Ganti kamera 1/3 orang</span><b>Mouse</b><span>Melihat sekeliling</span><b>Esc / ☰</b><span>Menu jeda</span></div><p>📱 HP/tablet: geser kiri untuk berjalan, geser kanan untuk melihat, ketuk E untuk berinteraksi, ⤒ untuk melompat.</p><p>🥽 VR: thumbstick kiri untuk berjalan (dorong penuh atau tekan stick untuk berlari), thumbstick kanan untuk berputar; arahkan kontroler lalu tekan pemicu untuk teleportasi atau berinteraksi.</p>');
 $("setb").onclick=()=>{const draw=()=>mpanel('<h3>⚙ Pengaturan</h3><button class="mb" id="s1">🎵 Musik: '+(st.mus?"Nyala":"Mati")+'</button><button class="mb" id="s2">🔊 Volume: '+Math.round(st.vol*100)+'%</button><button class="mb" id="s3">🖱 Sensitivitas: '+st.sens.toFixed(1)+'</button>',()=>{$("s1").onclick=()=>{musStart();musSet(!st.mus);draw()};$("s2").onclick=()=>{st.vol=st.vol>=1?0:st.vol+.5;beep(500);draw()};$("s3").onclick=()=>{st.sens=st.sens>=2?.5:st.sens+.5;draw()}});draw()};
 $("nama").addEventListener("keydown",e=>{if(e.key=="Enter")$("go").click()});
 $("bMenu").onclick=()=>openPause();$("bMus").onclick=()=>{musStart();musSet(!st.mus)};$("bE").onclick=()=>interact();
@@ -1001,7 +1054,7 @@ if(TOUCH){$("bE").style.display="block";$("bJ").style.display="block";$("bJ").on
 ["bMenu","bMus","bE"].forEach(i=>$(i).addEventListener("click",()=>$(i).blur()));
 function noVR(){$("vrb").disabled=true;$("vrb").textContent="VR tidak tersedia di perangkat ini"}
 if(navigator.xr&&navigator.xr.isSessionSupported)navigator.xr.isSessionSupported("immersive-vr").then(ok=>{if(ok){$("vrb").disabled=false}else noVR()}).catch(noVR);else noVR();
-$("vrb").onclick=async()=>{if(!valid())return;VRSTART=true;begin();try{R.xr.setReferenceSpaceType("local-floor");await R.xr.setSession(await navigator.xr.requestSession("immersive-vr",{optionalFeatures:["local-floor","bounded-floor"]}))}catch(e){$("err").textContent="Gagal masuk VR."}};
+$("vrb").onclick=async()=>{if(!valid())return;VRSTART=true;begin();try{R.xr.setReferenceSpaceType("local-floor");await R.xr.setSession(await navigator.xr.requestSession("immersive-vr",{optionalFeatures:["local-floor","bounded-floor"]}))}catch(e){$("err").textContent="Gagal masuk VR.";if(CS.on&&CS.vr)vrEnd()}};
 
 /* ================= MINIMAP ================= */
 const mg=$("mm").getContext("2d");
@@ -1021,9 +1074,9 @@ function minimap(t){const X=x=>(x+34)*160/68,Z=z=>(z+37)*128/53;mg.clearRect(0,0
 /* ================= LOOP UTAMA ================= */
 const clock=new THREE.Clock();let hudT=0,icT=0;
 R.setAnimationLoop(()=>{const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime,vr=R.xr.isPresenting;
- if(!vr){if(CS.on)csStep(dt);else if(MENU.on){if(!MENU.sv)MENU.sv={yaw,pitch};yaw+=dt*.1;pitch=-.14}const tp=st.tp&&!MENU.on&&!CS.on;camera.position.set(0,CS.on?CS.cy:1.6+JY+(tp?.7:0)+(MENU.on?3.5:0),tp?3.4:0);camera.rotation.x=tp?pitch*.5-.15:pitch;rig.rotation.y=yaw}
+ if(!vr){if(CS.on&&!CS.vr)csStep(dt);else if(MENU.on){if(!MENU.sv)MENU.sv={yaw,pitch};yaw+=dt*.1;pitch=-.14}const tp=st.tp&&!MENU.on&&!CS.on;camera.position.set(0,CS.on?CS.cy:1.6+JY+(tp?.7:0)+(MENU.on?3.5:0),tp?3.4:0);camera.rotation.x=tp?pitch*.5-.15:pitch;rig.rotation.y=yaw}
  AVS.mv=CS.on&&CS.walk?1:0;if(st.on&&!ui.cur&&!vr&&!CS.on)move(dt);
- marker.visible=false;if(vr){if(st.on&&!ui.cur){vrTurn(dt);ctr.forEach(c=>{const p=floorPt(c);if(p){marker.position.set(p.x,.06,p.z);marker.visible=true}})}}
+ marker.visible=false;if(vr){if(st.on&&!ui.cur&&!CS.on){vrTurn(dt);vrMove(dt);ctr.forEach(c=>{const p=floorPt(c);if(p){marker.position.set(p.x,.06,p.z);marker.visible=true}})}}
  ppos(v1);PL.x=v1.x;PL.z=v1.z;
  NPCS.forEach(n=>{if(n.rt){n.ic.s.position.y=2.9+Math.sin(t*3+n.i)*.1;return}const dx=v1.x-n.d.x,dz=v1.z-n.d.z;if(Math.hypot(dx,dz)<12)n.g.rotation.y=Math.atan2(dx,dz);n.g.position.y=Math.abs(Math.sin(t*2+n.i))*.06;n.ic.s.position.y=2.9+Math.sin(t*3+n.i)*.1;
   n.g.aR.rotation.x=(n.i==st.m&&st.phase==0)?-2.6+Math.sin(t*6)*.3:Math.sin(t*2+n.i)*.08;n.g.aL.rotation.x=Math.sin(t*2+n.i+1)*.08});
